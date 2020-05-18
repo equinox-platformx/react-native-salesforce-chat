@@ -1,10 +1,29 @@
 # react-native-salesforce-chat
 
+## Salesforce SDK Documentation
+
+This RN native module uses Salesforce Embedded Service SDK:
+
+- [iOS Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.service_sdk_ios.meta/service_sdk_ios/servicesdk_ios_dev_guide.htm)
+- [Android Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.service_sdk_android.meta/service_sdk_android/servicesdk_android_dev_guide.htm)
+
 ## Getting started
 
-`$ npm install react-native-salesforce-chat --save`
+```
+$ npm install react-native-salesforce-chat --save
 
-### Mostly automatic installation
+// or using yarn:
+
+$ yarn add react-native-salesforce-chat
+```
+
+For React Native version > 0.60, use autolinking:
+
+```
+$ cd ios && pod install
+```
+
+### Mostly automatic installation (for React Native version < 0.60)
 
 `$ react-native link react-native-salesforce-chat`
 

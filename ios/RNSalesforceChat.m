@@ -1,5 +1,4 @@
 #import "RNSalesforceChat.h"
-//#import "AppDelegate.h"
 
 @implementation RNSalesforceChat
 
