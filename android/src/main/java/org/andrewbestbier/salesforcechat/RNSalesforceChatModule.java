@@ -3,8 +3,8 @@ package org.andrewbestbier.salesforcechat;
 
 import java.util.LinkedList;
 
-import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -56,88 +56,26 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
         preChatEntities.clear();
 
         // Some required fields (Hidden)
-        PreChatField subject = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("subject")).build("Subject", "Subject", PreChatField.STRING);
-        PreChatField origin = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("origin")).build("Origin", "Origin", PreChatField.STRING);
-        PreChatField currency = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("currencyISOCode")).build("CurrencyIsoCode", "CurrencyIsoCode", PreChatField.STRING);
-        PreChatField status = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("status")).build("Status", "Status", PreChatField.STRING); //Hardcoded
-        PreChatField contactType = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("contactType")).build("ContactType__c", "ContactType__c", PreChatField.STRING); //Hardcoded
-        PreChatField locale = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("locale")).build("Locale__c", "Locale__c", PreChatField.STRING);
-        PreChatField canTSBeDone = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("canTSBeDone")).build("CanTroubleshootingbedone__c", "CanTroubleshootingbedone__c", PreChatField.STRING);
-        PreChatField product = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("product")).build("ProductV2__c", "ProductV2__c", PreChatField.STRING);
-        PreChatField equipment = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("equipment")).build("EquipmentV2__c", "EquipmentV2__c", PreChatField.STRING);
-        PreChatField version = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("version")).build("Version__c", "Version__c", PreChatField.STRING);
-        PreChatField pointOfUserJourney = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("pointOfUserJourney")).build("PointOfCustomerJourney__c", "PointOfCustomerJourney__c", PreChatField.STRING);
-        PreChatField additionalInformation = new PreChatField.Builder().hidden(true)
-                .value(chatSettings.getString("additionalInformation")).mapToChatTranscriptField("AdditionalInformation__c").build("AdditionalInformation__c", "AdditionalInformation__c", PreChatField.STRING);
-        PreChatField botMessage = new PreChatField.Builder().hidden(true)
-                 .value(chatSettings.getString("botMessage")).mapToChatTranscriptField("GenericBotMessage__c").build("GenericBotMessage__c", "GenericBotMessage__c", PreChatField.STRING);
-        PreChatField suppliedEmail = new PreChatField.Builder().hidden(true)
-                .value(userSettings.getString("email")).build("SuppliedEmail", "SuppliedEmail", PreChatField.EMAIL);
-        PreChatField suppliedName = new PreChatField.Builder().hidden(true)
-                .value(userSettings.getString("name")).build("SuppliedName", "SuppliedName", PreChatField.STRING);
-        //An unique identification of an engineer
+        PreChatField id = new PreChatField.Builder().hidden(true)
+                .value(userSettings.getString("salesforceId")).build("Id", "Id", PreChatField.STRING);
 
-        // Some optional fields (Hidden)
-        PreChatField email = new PreChatField.Builder().hidden(true)
-                .value(userSettings.getString("email")).build("Email", "Email", PreChatField.EMAIL);
-        //An unique identification of an engineer
+        preChatFields.add(id);
 
-        // Add the fields to the list
-        preChatFields.add(subject);
-        preChatFields.add(origin);
-        preChatFields.add(currency);
-        preChatFields.add(status);
-        preChatFields.add(contactType);
-        preChatFields.add(locale);
-        preChatFields.add(suppliedEmail);
-        preChatFields.add(suppliedName);
-        preChatFields.add(email);
-        preChatFields.add(canTSBeDone);
-        preChatFields.add(product);
-        preChatFields.add(equipment);
-        preChatFields.add(version);
-        preChatFields.add(pointOfUserJourney);
-        preChatFields.add(additionalInformation);
-        preChatFields.add(botMessage);
+        // Create an entity field builder for Contact fields
+        PreChatEntityField.Builder contactEntityBuilder = new PreChatEntityField.Builder()
+                .doCreate(false).doFind(true).isExactMatch(true);
 
+        // Create the Contact entity
+        PreChatEntity contactEntity = new PreChatEntity.Builder()
+                .saveToTranscript("Contact")
+                .showOnCreate(true)
+                .linkToEntityName("Contact")
+                .linkToEntityField("ContactId")
+                .addPreChatEntityField(contactEntityBuilder.build("Id", "Id"))
+                .build("Contact");
 
-        // Create an entity field builder for Case fields
-        PreChatEntityField.Builder caseEntityBuilder = new PreChatEntityField.Builder()
-                .doCreate(true);
-
-        // Create the case entity
-        PreChatEntity caseEntity = new PreChatEntity.Builder()
-                .saveToTranscript("Case")
-                .addPreChatEntityField(caseEntityBuilder.build("Subject", "Subject"))
-                .addPreChatEntityField(caseEntityBuilder.build("Origin", "Origin"))
-                .addPreChatEntityField(caseEntityBuilder.build("CurrencyIsoCode", "CurrencyIsoCode"))
-                .addPreChatEntityField(caseEntityBuilder.build("Status", "Status"))
-                .addPreChatEntityField(caseEntityBuilder.build("ContactType__c", "ContactType__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("Locale__c", "Locale__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("Email", "Email"))
-                .addPreChatEntityField(caseEntityBuilder.build("SuppliedEmail", "SuppliedEmail"))
-                .addPreChatEntityField(caseEntityBuilder.build("SuppliedName", "SuppliedName"))
-                .addPreChatEntityField(caseEntityBuilder.build("CanTroubleshootingbedone__c", "CanTroubleshootingbedone__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("ProductV2__c", "ProductV2__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("EquipmentV2__c", "EquipmentV2__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("Version__c", "Version__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("PointOfCustomerJourney__c", "PointOfCustomerJourney__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("AdditionalInformation__c", "AdditionalInformation__c"))
-                .addPreChatEntityField(caseEntityBuilder.build("GenericBotMessage__c", "GenericBotMessage__c"))
-                .build("Case");
         // Add the entities to the list
-        preChatEntities.add(caseEntity);
+        preChatEntities.add(contactEntity);
     }
 
     @ReactMethod
@@ -149,6 +87,34 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
                 .build();
     }
 
+    @ReactMethod
+    public void isAgentAvailable(final Callback successCallback) {
+
+        // Create an agent availability client
+        AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfiguration);
+
+        client.check().onResult(new Async.ResultHandler<AvailabilityState>() {
+            @Override
+            public void handleResult(Async<?> async, @NonNull AvailabilityState state) {
+
+                switch (state.getStatus()) {
+                    case AgentsAvailable: {
+                        successCallback.invoke(false, true);
+                        break;
+                    }
+                    case NoAgentsAvailable: {
+                        successCallback.invoke(false, false);
+                        break;
+                    }
+                    case Unknown: {
+                        successCallback.invoke(false, false);
+                        break;
+                    }
+                }
+                ;
+            }
+        });
+    };
 
     @ReactMethod
     public void launch(final Callback successCallback) {
@@ -178,14 +144,13 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
         });
     };
 
-
-
     private void startChat() {
       ChatUIConfiguration chatUiConfiguration =
         new ChatUIConfiguration.Builder()
           .chatConfiguration(chatConfiguration)
           .disablePreChatView(true)
           .build();
+
         ChatUI.configure(chatUiConfiguration)
                 .createClient(reactContext)
                 .onResult(new Async.ResultHandler<ChatUIClient>() {
