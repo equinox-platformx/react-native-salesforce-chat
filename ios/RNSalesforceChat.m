@@ -1,3 +1,4 @@
+#import <React/RCTConvert.h>
 #import "RNSalesforceChat.h"
 
 @implementation RNSalesforceChat
@@ -5,6 +6,7 @@
 NSArray *prechatFields;
 NSArray *prechatEntities;
 SCSChatConfiguration *chatConfiguration;
+SCAppearanceConfiguration *appearance;
 
 RCT_EXPORT_MODULE();
 
@@ -98,6 +100,14 @@ RCT_EXPORT_METHOD(configLaunch:(NSDictionary *)chatSettings userSettings:(NSDict
 {
     prechatFields = [self preChatObjects:chatSettings userSettings:userSettings];
     prechatEntities = [[NSArray new] arrayByAddingObjectsFromArray:@[[self contactEntity]]];
+
+    appearance = [SCAppearanceConfiguration new];
+
+    [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandPrimary];
+    [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandSecondary];
+
+    UIImage *image = [RCTConvert UIImage:chatSettings[@"chatAgentAvatar"]];
+    [appearance setImage:image compatibleWithTraitCollection:nil forName:SCSAppearanceImageTokenChatAgentAvatar];
 }
 
 RCT_EXPORT_METHOD(configChat:(NSString *)orgId 
@@ -120,24 +130,11 @@ RCT_EXPORT_METHOD(configChat:(NSString *)orgId
 
     // Update config object with the entity mappings
     chatConfiguration.prechatEntities = [[NSArray new] arrayByAddingObjectsFromArray:prechatEntities];
-
 }
 
 RCT_EXPORT_METHOD(launch:(RCTResponseSenderBlock)callback)
 {
-    // Create appearance configuration instance
-    SCAppearanceConfiguration *appearance = [SCAppearanceConfiguration new];
-
     // NSString *imagePath = @"https://eqx--uat--c.cs11.visual.force.com/resource/1589563476000/embedded_chat_agent_logo";
-    // NSURL *url = [NSURL URLWithString:[imagePath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
-    // UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:url]];
-
-    // NSString *forNameValue = @"chatAgentAvatar";
-    // // Sets agent image
-    // [appearance setImage:image compatibleWithTraitCollection:nil forName:forNameValue];
-    // Customize color tokens
-    [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandPrimary];
-    [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandSecondary];
 
     // Save configuration instance
     [SCServiceCloud sharedInstance].appearanceConfiguration = appearance;
@@ -157,6 +154,22 @@ RCT_EXPORT_METHOD(launch:(RCTResponseSenderBlock)callback)
 
             callback(@[[NSNull null]]);
             
+        });
+    }];
+}
+
+RCT_EXPORT_METHOD(finish:(RCTResponseSenderBlock)callback)
+{
+    [[SCServiceCloud sharedInstance].chatCore stopSessionWithCompletion:^(NSError *error, SCSChat *chat) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (error != nil) {
+                callback(@[[NSNull null], @NO]);
+                return;
+            }
+
+            [[SCServiceCloud sharedInstance].chatUI dismissChat];
+            callback(@[[NSNull null], @YES]);
+            return;
         });
     }];
 }

@@ -48,6 +48,8 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
 
     private ChatConfiguration chatConfiguration;
 
+    private Async<ChatUIClient> AsyncChatUIClient;
+
 
     @ReactMethod
     public void configLaunch(ReadableMap chatSettings, ReadableMap userSettings) {
@@ -117,6 +119,20 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
     };
 
     @ReactMethod
+    public void finish(final Callback successCallback) {
+        if (this.AsyncChatUIClient != null) {
+            this.AsyncChatUIClient.onResult(new Async.ResultHandler<ChatUIClient>() {
+                @Override public void handleResult (Async<?> operation, @NonNull ChatUIClient chatUIClient) {
+                    chatUIClient.endChatSession();
+                    successCallback.invoke(false, true);
+                }
+            });
+            return;
+        }
+        successCallback.invoke(false, false);
+    };
+
+    @ReactMethod
     public void launch(final Callback successCallback) {
 
         // Create an agent availability client
@@ -149,17 +165,16 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
         new ChatUIConfiguration.Builder()
           .chatConfiguration(chatConfiguration)
           .disablePreChatView(true)
+          .defaultToMinimized(false)
           .build();
 
-        ChatUI.configure(chatUiConfiguration)
-                .createClient(reactContext)
-                .onResult(new Async.ResultHandler<ChatUIClient>() {
+        this.AsyncChatUIClient = ChatUI.configure(chatUiConfiguration).createClient(reactContext);
 
-                        @Override public void handleResult (Async<?> operation,
-                                                        @NonNull ChatUIClient chatUIClient) {
-                        chatUIClient.startChatSession((FragmentActivity) getCurrentActivity());
-                        }
-                });
+        this.AsyncChatUIClient.onResult(new Async.ResultHandler<ChatUIClient>() {
+            @Override public void handleResult (Async<?> operation, @NonNull ChatUIClient chatUIClient) {
+                chatUIClient.startChatSession((FragmentActivity) getCurrentActivity());
+            }
+        });
     };
 
 }
