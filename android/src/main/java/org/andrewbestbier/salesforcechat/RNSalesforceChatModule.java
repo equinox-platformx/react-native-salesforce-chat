@@ -14,9 +14,9 @@ import com.facebook.react.bridge.ReadableMap;
 
 import com.salesforce.android.chat.core.ChatConfiguration;
 import com.salesforce.android.chat.core.model.AvailabilityState;
-import com.salesforce.android.chat.core.model.PreChatField;
-import com.salesforce.android.chat.core.model.PreChatEntityField;
-import com.salesforce.android.chat.core.model.PreChatEntity;
+import com.salesforce.android.chat.core.model.ChatUserData;
+import com.salesforce.android.chat.core.model.ChatEntityField;
+import com.salesforce.android.chat.core.model.ChatEntity;
 import com.salesforce.android.chat.ui.ChatUI;
 import com.salesforce.android.chat.ui.ChatUIClient;
 import com.salesforce.android.chat.ui.ChatUIConfiguration;
@@ -42,9 +42,11 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
     }
 
 
-    private LinkedList<PreChatField> preChatFields = new LinkedList<>();
+    private LinkedList<ChatUserData> userDataFields = new LinkedList<>();
 
-    private LinkedList<PreChatEntity> preChatEntities = new LinkedList<>();
+    private LinkedList<ChatEntity> chatEntities = new LinkedList<>();
+
+    private ChatConfiguration.Builder chatConfigurationBuilder;
 
     private ChatConfiguration chatConfiguration;
 
@@ -52,41 +54,55 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void configLaunch(ReadableMap chatSettings, ReadableMap userSettings) {
+    public void configLaunch(
+            ReadableMap chatSettings,
+            ReadableMap userSettings
+    ) {
+        userDataFields.clear();
+        chatEntities.clear();
 
-        preChatFields.clear();
-        preChatEntities.clear();
+        String salesForceId = userSettings.getString("salesforceId");
+        ChatUserData idData = new ChatUserData("Id", salesForceId, true);
 
-        // Some required fields (Hidden)
-        PreChatField id = new PreChatField.Builder().hidden(true)
-                .value(userSettings.getString("salesforceId")).build("Id", "Id", PreChatField.STRING);
+        userDataFields.add(idData);
 
-        preChatFields.add(id);
+        ChatEntityField idField = new ChatEntityField.Builder()
+                .doCreate(false)
+                .doFind(true)
+                .isExactMatch(true)
+                .build("Id", idData);
 
-        // Create an entity field builder for Contact fields
-        PreChatEntityField.Builder contactEntityBuilder = new PreChatEntityField.Builder()
-                .doCreate(false).doFind(true).isExactMatch(true);
-
-        // Create the Contact entity
-        PreChatEntity contactEntity = new PreChatEntity.Builder()
-                .saveToTranscript("Contact")
+        ChatEntity contactEntity = new ChatEntity.Builder()
                 .showOnCreate(true)
-                .linkToEntityName("Contact")
-                .linkToEntityField("ContactId")
-                .addPreChatEntityField(contactEntityBuilder.build("Id", "Id"))
+                .linkToTranscriptField("Contact")
+                .linkToAnotherSalesforceObject("Contact", "ContactId")
+                .addChatEntityField(idField)
                 .build("Contact");
 
-        // Add the entities to the list
-        preChatEntities.add(contactEntity);
+        chatEntities.add(contactEntity);
     }
 
     @ReactMethod
-    public void configChat(String ORG_ID, String DEPLOYMENT_ID, String BUTTON_ID, String LIVE_AGENT_POD, String VISITOR_NAME) {
-        chatConfiguration = new ChatConfiguration.Builder(ORG_ID, BUTTON_ID, DEPLOYMENT_ID, LIVE_AGENT_POD)
-                .preChatFields(preChatFields)
-                .preChatEntities(preChatEntities)
-                .visitorName(VISITOR_NAME)
-                .build();
+    public void configChat(
+            String ORG_ID,
+            String DEPLOYMENT_ID,
+            String BUTTON_ID,
+            String LIVE_AGENT_POD,
+            String VISITOR_NAME
+    ) {
+        chatConfigurationBuilder = new ChatConfiguration.Builder(
+                ORG_ID,
+                BUTTON_ID,
+                DEPLOYMENT_ID,
+                LIVE_AGENT_POD
+        );
+
+        chatConfigurationBuilder
+                .chatUserData(userDataFields)
+                .chatEntities(chatEntities)
+                .visitorName(VISITOR_NAME);
+
+        chatConfiguration = chatConfigurationBuilder.build();
     }
 
     @ReactMethod
@@ -135,7 +151,6 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void launch(final Callback successCallback) {
 
-        // Create an agent availability client
         AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfiguration);
 
         client.check().onResult(new Async.ResultHandler<AvailabilityState>() {
@@ -161,18 +176,19 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
     };
 
     private void startChat() {
-      ChatUIConfiguration chatUiConfiguration =
-        new ChatUIConfiguration.Builder()
-          .chatConfiguration(chatConfiguration)
-          .disablePreChatView(true)
-          .defaultToMinimized(false)
-          .build();
+        ChatUIConfiguration chatUiConfiguration = new ChatUIConfiguration.Builder()
+            .chatConfiguration(chatConfiguration)
+            .disablePreChatView(true)
+            .defaultToMinimized(false)
+            .build();
 
-        this.AsyncChatUIClient = ChatUI.configure(chatUiConfiguration).createClient(reactContext);
+        this.AsyncChatUIClient = ChatUI
+                .configure(chatUiConfiguration)
+                .createClient(getReactApplicationContext());
 
         this.AsyncChatUIClient.onResult(new Async.ResultHandler<ChatUIClient>() {
             @Override public void handleResult (Async<?> operation, @NonNull ChatUIClient chatUIClient) {
-                chatUIClient.startChatSession((FragmentActivity) getCurrentActivity());
+                chatUIClient.startChatSession(getCurrentActivity());
             }
         });
     };
