@@ -106,8 +106,11 @@ RCT_EXPORT_METHOD(configLaunch:(NSDictionary *)chatSettings userSettings:(NSDict
     [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandPrimary];
     [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandSecondary];
 
-    UIImage *image = [RCTConvert UIImage:chatSettings[@"chatAgentAvatar"]];
-    [appearance setImage:image compatibleWithTraitCollection:nil forName:SCSAppearanceImageTokenChatAgentAvatar];
+    UIImage *agentImage = [RCTConvert UIImage:chatSettings[@"chatAgentAvatar"]];
+    [appearance setImage:agentImage compatibleWithTraitCollection:UITraitCollection.currentTraitCollection forName:SCSAppearanceImageTokenChatAgentAvatar];
+
+    UIImage *botImage = [RCTConvert UIImage:chatSettings[@"chatAgentAvatar"]];
+    [appearance setImage:botImage compatibleWithTraitCollection:UITraitCollection.currentTraitCollection forName:SCSAppearanceImageTokenChatBotAvatar];
 }
 
 RCT_EXPORT_METHOD(configChat:(NSString *)orgId 
