@@ -62,9 +62,13 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
         chatEntities.clear();
 
         String salesForceId = userSettings.getString("salesforceId");
+        boolean inClubConcierge = userSettings.getBoolean("inClubConcierge");
+
         ChatUserData idData = new ChatUserData("Id", salesForceId, true);
+        ChatUserData attentionData = new ChatUserData("inClubConcierge", inClubConcierge, true, "InClubConcierge__c");
 
         userDataFields.add(idData);
+        userDataFields.add(attentionData);
 
         ChatEntityField idField = new ChatEntityField.Builder()
                 .doCreate(false)
