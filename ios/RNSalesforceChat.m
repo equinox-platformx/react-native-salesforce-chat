@@ -13,48 +13,24 @@ RCT_EXPORT_MODULE();
 //MARK: Private Methods
 -(NSArray *)preChatObjects:(NSDictionary *) chatSettings userSettings: (NSDictionary *)userSettings {
 
+    SCSPrechatObject* customData = [[SCSPrechatObject alloc] 
+                                    initWithLabel:@"InClubConcierge__c"
+                                    value: userSettings[@"inClubConcierge"]];
+    customData.transcriptFields = @[@"InClubConcierge__c"];
     // Prechat objects
     NSArray * prechatObjects = @[
         [[SCSPrechatObject alloc] initWithLabel:@"Id" value: userSettings[@"salesforceId"]],
+        customData,
     ];
 
     return prechatObjects;
 }
 
-+(NSArray *)preChatEntityFields {
-
-    // Prechat entities
-    NSArray *entityFields = @[
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"Subject" label:@"Subject"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"Origin" label:@"Origin"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"CurrencyISOCode" label:@"CurrencyIsoCode"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"Status" label:@"Status"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"ContactType__c" label:@"ContactType__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"Locale__c" label:@"Locale__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"SuppliedName" label:@"SuppliedName"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"SuppliedEmail" label:@"SuppliedEmail"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"Email" label:@"Email"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"CanTroubleshootingbedone__c" label:@"CanTroubleshootingbedone__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"ProductV2__c" label:@"ProductV2__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"EquipmentV2__c" label:@"EquipmentV2__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"AdditionalInformation__c" label:@"AdditionalInformation__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"GenericBotMessage__c" label:@"GenericBotMessage__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"Version__c" label:@"Version__c"],
-         [[SCSPrechatEntityField alloc] initWithFieldName:@"PointOfCustomerJourney__c" label:@"PointOfCustomerJourney__c"]
-    ];
-
-    for (SCSPrechatEntityField* entityField in entityFields) {
-        entityField.doCreate = YES;
-    }
-
-    return entityFields;
-}
-
 -(SCSPrechatEntity *) contactEntity {
-    SCSPrechatEntityField* emailEntityField = [[SCSPrechatEntityField alloc] initWithFieldName:@"Id" label:@"Id"];
-    emailEntityField.doCreate = NO;
-    emailEntityField.doFind = YES;
-    emailEntityField.isExactMatch = YES;
+    SCSPrechatEntityField* idEntityField = [[SCSPrechatEntityField alloc] initWithFieldName:@"Id" label:@"Id"];
+    idEntityField.doCreate = NO;
+    idEntityField.doFind = YES;
+    idEntityField.isExactMatch = YES;
 
     // Create an entity mapping for a Contact record type
     // (All this entity stuff is only required if you
@@ -64,20 +40,9 @@ RCT_EXPORT_MODULE();
     contactEntity.showOnCreate = YES;
     contactEntity.linkToEntityName = @"Case";
     contactEntity.linkToEntityField = @"ContactId";
-    [contactEntity.entityFieldsMaps addObject:emailEntityField];
+    [contactEntity.entityFieldsMaps addObject:idEntityField];
 
     return contactEntity;
-}
-
--(SCSPrechatEntity *) caseEntity {
-
-    // Create an entity mapping for a Case record type
-    SCSPrechatEntity* caseEntity = [[SCSPrechatEntity alloc] initWithEntityName:@"Case"];
-    caseEntity.saveToTranscript = @"Case";
-    caseEntity.showOnCreate = YES;
-    [caseEntity.entityFieldsMaps addObjectsFromArray:[RNSalesforceChat preChatEntityFields]];
-
-    return caseEntity;
 }
 
 //MARK: Public Methods
@@ -100,7 +65,6 @@ RCT_EXPORT_METHOD(configLaunch:(NSDictionary *)chatSettings userSettings:(NSDict
 {
     prechatFields = [self preChatObjects:chatSettings userSettings:userSettings];
     prechatEntities = [[NSArray new] arrayByAddingObjectsFromArray:@[[self contactEntity]]];
-
     appearance = [SCAppearanceConfiguration new];
 
     [appearance setColor:[UIColor colorWithRed: 0/255 green: 0/255 blue: 0/255 alpha: 1.0] forName:SCSAppearanceColorTokenBrandPrimary];
