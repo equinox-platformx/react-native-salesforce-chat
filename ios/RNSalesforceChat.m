@@ -12,15 +12,22 @@ RCT_EXPORT_MODULE();
 
 //MARK: Private Methods
 -(NSArray *)preChatObjects:(NSDictionary *) chatSettings userSettings: (NSDictionary *)userSettings {
+    // Prechat objects
 
-    SCSPrechatObject* customData = [[SCSPrechatObject alloc] 
+    SCSPrechatObject* inClubConciergeData = [[SCSPrechatObject alloc] 
                                     initWithLabel:@"InClubConcierge__c"
                                     value: userSettings[@"inClubConcierge"]];
-    customData.transcriptFields = @[@"InClubConcierge__c"];
-    // Prechat objects
+    inClubConciergeData.transcriptFields = @[@"InClubConcierge__c"];
+
+    SCSPrechatObject* facilityIdData = [[SCSPrechatObject alloc] 
+                                    initWithLabel:@"Checkin_ClubID__c"
+                                    value: userSettings[@"facilityId"]];
+    facilityIdData.transcriptFields = @[@"Checkin_ClubID__c"];
+
     NSArray * prechatObjects = @[
         [[SCSPrechatObject alloc] initWithLabel:@"Id" value: userSettings[@"salesforceId"]],
-        customData,
+        inClubConciergeData,
+        facilityIdData,
     ];
 
     return prechatObjects;
