@@ -1,10 +1,10 @@
 {
   "name": "react-native-salesforce-chat",
-  "version": "1.4.0",
+  "version": "1.4.5",
   "description": "React native support for Salesforce live chat",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eelmoni/react-native-salesforce-chat"
+    "url": "git+https://github.com/equinox-contech/react-native-salesforce-chat"
   },
   "keywords": [
     "react-native",
@@ -20,7 +20,7 @@
   "author": "Emmanuel Elmoni <emmanuel.elmoni@gmail.com>",
   "license": "MIT",
   "nativePackage": true,
-  "homepage": "https://github.com/eelmoni/react-native-salesforce-chat#readme",
+  "homepage": "https://github.com/equinox-contech/react-native-salesforce-chat#readme",
   "devDependencies": {
     "react": "^16.13.1",
     "react-native": "^0.62.2"
