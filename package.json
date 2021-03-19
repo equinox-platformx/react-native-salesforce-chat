@@ -1,6 +1,6 @@
 {
   "name": "react-native-salesforce-chat",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "React native support for Salesforce live chat",
   "repository": {
     "type": "git",
