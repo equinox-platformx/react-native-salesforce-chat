@@ -35,7 +35,7 @@ repositories {
         url "$projectDir/../../../node_modules/react-native/android"
     }
     maven {
-        url 'https://salesforcesos.com/android/maven/release'
+        url 'https://s3.amazonaws.com/salesforcesos.com/android/maven/release'
     }
 }
 
