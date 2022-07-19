@@ -13,8 +13,8 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "10.0"
 
   s.source       = { :git => "https://github.com/equinox-platformx/react-native-salesforce-chat", :tag => "#{s.version}" }
-  s.source_files  = "ios/**/*.{h,m}"
+  s.source_files  = "ios/**/*.{h,m,swift}"
 
   s.dependency 'React'
-  s.ios.vendored_frameworks = 'ios/Frameworks/ServiceChat.framework', 'ios/Frameworks/ServiceCore.framework','ios/Frameworks/ServiceCases.framework'  
+  s.ios.vendored_frameworks = 'ios/Frameworks/ServiceChat.xcframework', 'ios/Frameworks/ServiceCore.xcframework','ios/Frameworks/ServiceCases.xcframework'
 end
