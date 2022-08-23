@@ -1,11 +1,15 @@
-
 package org.andrewbestbier.salesforcechat;
 
-import java.util.LinkedList;
-
+import android.app.Activity;
+import android.content.Intent;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
+import java.util.LinkedList;
+
+import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -24,12 +28,14 @@ import com.salesforce.android.service.common.utilities.control.Async;
 import com.salesforce.android.chat.core.AgentAvailabilityClient;
 import com.salesforce.android.chat.core.ChatCore;
 
-
 public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
-
     private static final String TAG = "RNSalesforceChat";
-
     private final ReactApplicationContext reactContext;
+    private LinkedList<ChatUserData> userDataFields = new LinkedList<>();
+    private LinkedList<ChatEntity> chatEntities = new LinkedList<>();
+    private ChatConfiguration.Builder chatConfigurationBuilder;
+    private ChatConfiguration chatConfiguration;
+    private Async<ChatUIClient> AsyncChatUIClient;
 
     public RNSalesforceChatModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -40,18 +46,6 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
     public String getName() {
         return TAG;
     }
-
-
-    private LinkedList<ChatUserData> userDataFields = new LinkedList<>();
-
-    private LinkedList<ChatEntity> chatEntities = new LinkedList<>();
-
-    private ChatConfiguration.Builder chatConfigurationBuilder;
-
-    private ChatConfiguration chatConfiguration;
-
-    private Async<ChatUIClient> AsyncChatUIClient;
-
 
     @ReactMethod
     public void configLaunch(
@@ -114,7 +108,6 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void isAgentAvailable(final Callback successCallback) {
-
         // Create an agent availability client
         AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfiguration);
 
@@ -146,24 +139,25 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
         if (this.AsyncChatUIClient != null) {
             this.AsyncChatUIClient.onResult(new Async.ResultHandler<ChatUIClient>() {
                 @Override public void handleResult (Async<?> operation, @NonNull ChatUIClient chatUIClient) {
+                    chatUIClient.getCurrentSessionState();
                     chatUIClient.endChatSession();
                     successCallback.invoke(false, true);
                 }
             });
+
             return;
         }
+
         successCallback.invoke(false, false);
     };
 
     @ReactMethod
     public void launch(final Callback successCallback) {
-
         AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfiguration);
 
         client.check().onResult(new Async.ResultHandler<AvailabilityState>() {
             @Override
             public void handleResult(Async<?> async, @NonNull AvailabilityState state) {
-
                 switch (state.getStatus()) {
                     case AgentsAvailable: {
                         startChat();
@@ -185,8 +179,8 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
     private void startChat() {
         ChatUIConfiguration chatUiConfiguration = new ChatUIConfiguration.Builder()
             .chatConfiguration(chatConfiguration)
-            .disablePreChatView(true)
             .defaultToMinimized(false)
+            .disablePreChatView(true)
             .build();
 
         this.AsyncChatUIClient = ChatUI
@@ -196,8 +190,12 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule {
         this.AsyncChatUIClient.onResult(new Async.ResultHandler<ChatUIClient>() {
             @Override public void handleResult (Async<?> operation, @NonNull ChatUIClient chatUIClient) {
                 chatUIClient.startChatSession(getCurrentActivity());
+                // Workaround: ensure initial deep linking, from chat session,
+                // minimizes chat & doesn't hide the chat ui activity
+                //   - this may be fixed when (known issues #1 -> android minimization - seen here: https://github.com/forcedotcom/ServiceSDK-Android/releases)
+                //     is internally resolved.
+                chatUIClient.minimize();
             }
         });
     };
-
 }
